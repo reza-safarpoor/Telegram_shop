@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     chat_id = update.effective_chat.id
-    
+    print("test")
     user, created = await sync_to_async(TelegramUser.objects.get_or_create)(
         user_id=user_id,
         defaults={'chat_id': chat_id}
