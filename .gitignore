@@ -1,0 +1,12 @@
+__pycache__
+migrations
+/db.sqlite3
+/include
+/bin
+/lib
+/lib64
+/Classesxlsx
+/file.xlsx
+/Statexlsx
+/pyvenv.cfg
+/erd.dot
