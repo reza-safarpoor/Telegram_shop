@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Products, TelegramUser
+from .models import Products, TelegramUser, Payment
 
 @admin.register(Products)
 class ProductsAdmin(admin.ModelAdmin):
@@ -8,3 +8,4 @@ class ProductsAdmin(admin.ModelAdmin):
     list_filter = ('Platform',)
 
 admin.site.register(TelegramUser)
+admin.site.register(Payment)

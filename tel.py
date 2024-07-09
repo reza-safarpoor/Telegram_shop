@@ -6,6 +6,7 @@ import django
 import os
 import sys
 from asgiref.sync import sync_to_async
+from django.db.models import Sum
 
 TOKEN = "6800524763:AAFOLsyu0ZTDvPruWhNNdtoU1yTcbvKI_KY"
 
@@ -13,7 +14,7 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'myproject.settings')
 django.setup()
 
-from myapp.models import TelegramUser, Products
+from myapp.models import TelegramUser, Products, Payment
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     level=logging.INFO)
@@ -23,7 +24,6 @@ logger = logging.getLogger(__name__)
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     chat_id = update.effective_chat.id
-    print("test")
     user, created = await sync_to_async(TelegramUser.objects.get_or_create)(
         user_id=user_id,
         defaults={'chat_id': chat_id}
@@ -31,7 +31,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     keyboard = [
         ["Categories", "Button 2"],
-        ["Button 3", "Button 4"],
+        ["Wallet", "Button 4"],
         ["Button 5", "Button 6"]
     ]
     reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
@@ -48,7 +48,19 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
         inline_reply_markup = InlineKeyboardMarkup(inline_keyboard)
 
         await update.message.reply_text('Choose one of the inline options:', reply_markup=inline_reply_markup)
-        
+    elif text == "Wallet":
+        user_id = update.effective_user.id
+        user = await sync_to_async(TelegramUser.objects.get)(user_id=user_id)
+        total_payments = await sync_to_async(Payment.objects.filter(user=user).count)()
+        total_amount = await sync_to_async(Payment.objects.filter(user=user).aggregate)(total=Sum('amount'))
+
+        wallet_info = (
+            f"User ID: {user.user_id}\n"
+            f"Account Balance: {user.account_balance} TRX\n"
+            f"Total Payments: {total_amount['total']} TRX\n"
+            f"Total Payments Count: {total_payments}"
+        )
+        await update.message.reply_text(wallet_info)
     else:
         await update.message.reply_text('This button is not handled yet.')
 
@@ -84,8 +96,6 @@ async def product_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     await query.answer(text=f"Product: {product.Name}\nPrice: {product.Price}", show_alert=True)
     
-    
-
 async def close_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()

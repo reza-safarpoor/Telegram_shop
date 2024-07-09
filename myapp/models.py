@@ -22,3 +22,11 @@ class Products(models.Model):
 
     def __str__(self):
         return self.Name
+    
+class Payment(models.Model):
+    user = models.ForeignKey(TelegramUser, on_delete=models.CASCADE, related_name='payments')
+    amount = models.DecimalField(max_digits=20, decimal_places=8)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Payment of {self.amount} TRX on {self.timestamp}"
